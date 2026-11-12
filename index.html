@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daily Art</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Daily Art</h1>
+      <p id="date-line"></p>
+    </header>
+
+    <!-- Today's video -->
+    <section id="today">
+      <div class="player">
+        <iframe id="player" title="Video" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+      </div>
+
+      <div class="info">
+        <div class="title-row">
+          <div>
+            <h2 id="title"></h2>
+            <p id="artist"></p>
+          </div>
+          <button id="fav-button" type="button" aria-pressed="false" title="Add to favorites">♡</button>
+        </div>
+        <p id="note"></p>
+        <a id="back-to-today" href="./" hidden>← Back to today's video</a>
+      </div>
+    </section>
+
+    <!-- Saved favorites -->
+    <section>
+      <h3>Favorites</h3>
+      <ul id="favorites" class="list"></ul>
+      <p id="favorites-empty" class="empty">Tap ♡ on a video to save it here.</p>
+    </section>
+
+    <!-- Videos from earlier days -->
+    <section>
+      <h3>Past days</h3>
+      <ul id="history" class="list"></ul>
+      <p id="history-empty" class="empty">Videos from earlier days will show up here.</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
