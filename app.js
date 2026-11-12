@@ -187,6 +187,149 @@ function addFavoritesFromCode(videos) {
   return added > 0;
 }
 
+// ---------- Syncing favorites through a secret GitHub Gist ----------
+// The Gist (a small private-link file in my GitHub account) is the master copy of my favorites.
+// Each device stores my GitHub key in its own browser; the key is never in the code.
+
+const SYNC_TOKEN_KEY = "dailyArt.syncToken";
+const SYNC_GIST_KEY = "dailyArt.syncGist";
+const GIST_FILE = "daily-art-favorites.json";
+
+// Read and write a single saved setting (a piece of text) in the browser.
+function readSetting(key) {
+  try {
+    return localStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+
+function writeSetting(key, value) {
+  try {
+    if (value) localStorage.setItem(key, value);
+    else localStorage.removeItem(key);
+  } catch {
+    // Storage unavailable: sync just won't be remembered on this device.
+  }
+}
+
+function syncIsOn() {
+  return Boolean(readSetting(SYNC_TOKEN_KEY) && readSetting(SYNC_GIST_KEY));
+}
+
+// Show "Sync favorites" or "Turn off sync" on the button.
+function updateSyncButton() {
+  document.getElementById("sync-favorites").textContent = syncIsOn() ? "Turn off sync" : "Sync favorites";
+}
+
+// Talk to GitHub's API. Throws an error with a plain-language message if it fails.
+async function githubApi(path, options = {}, token = readSetting(SYNC_TOKEN_KEY)) {
+  let response;
+  try {
+    response = await fetch("https://api.github.com" + path, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+      },
+    });
+  } catch {
+    throw new Error("Sync couldn't reach GitHub. Are you online? Your favorites are still saved on this device.");
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error("GitHub didn't accept your key. It may have expired. Tap \"Turn off sync\", then \"Sync favorites\" to enter a new one.");
+  }
+  if (!response.ok) {
+    throw new Error(`Sync had a problem talking to GitHub (error ${response.status}). Your favorites are still saved on this device.`);
+  }
+  return response.json();
+}
+
+// Read the favorites list out of a Gist, keeping only videos that still exist.
+function favoritesInGist(gist, videos) {
+  const knownIds = new Set(videos.map((v) => v.id));
+  try {
+    const list = JSON.parse(gist.files[GIST_FILE].content);
+    return Array.isArray(list) ? list.filter((id) => knownIds.has(id)) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Find my favorites Gist, or create a new secret one. Returns { id, favorites }.
+async function findOrCreateGist(token, videos) {
+  const gists = await githubApi("/gists?per_page=100", {}, token);
+  const existing = gists.find((g) => g.files && g.files[GIST_FILE]);
+  if (existing) {
+    const gist = await githubApi(`/gists/${existing.id}`, {}, token);
+    return { id: gist.id, favorites: favoritesInGist(gist, videos) };
+  }
+  const created = await githubApi("/gists", {
+    method: "POST",
+    body: JSON.stringify({
+      public: false,
+      description: "Daily Art favorites",
+      files: { [GIST_FILE]: { content: JSON.stringify(loadList(FAVORITES_KEY)) } },
+    }),
+  }, token);
+  return { id: created.id, favorites: [] };
+}
+
+// Send this device's favorites to the Gist.
+async function pushFavorites() {
+  if (!syncIsOn()) return;
+  try {
+    await githubApi(`/gists/${readSetting(SYNC_GIST_KEY)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(loadList(FAVORITES_KEY)) } } }),
+    });
+    showSyncMessage("Favorites sync is on ✓");
+  } catch (error) {
+    showSyncMessage(error.message);
+  }
+}
+
+// Fetch the favorites list from the Gist.
+async function pullFavorites(videos) {
+  const gist = await githubApi(`/gists/${readSetting(SYNC_GIST_KEY)}`);
+  return favoritesInGist(gist, videos);
+}
+
+// Ask for a GitHub key, connect to the Gist, and combine its favorites with this device's.
+async function turnOnSync(videos) {
+  const token = (prompt("Paste your GitHub key (it starts with github_pat_):") || "").trim();
+  if (!token) return false; // cancelled
+
+  showSyncMessage("Connecting…");
+  try {
+    const gist = await findOrCreateGist(token, videos);
+    const combined = loadList(FAVORITES_KEY);
+    for (const id of gist.favorites) {
+      if (!combined.includes(id)) combined.push(id);
+    }
+    saveList(FAVORITES_KEY, combined);
+    writeSetting(SYNC_TOKEN_KEY, token);
+    writeSetting(SYNC_GIST_KEY, gist.id);
+    await pushFavorites();
+    updateSyncButton();
+    return true;
+  } catch (error) {
+    showSyncMessage(error.message);
+    return false;
+  }
+}
+
+// Forget the key on this device. Favorites stay saved here, and the Gist is left alone.
+function turnOffSync() {
+  if (!confirm("Turn off favorites sync on this device? Your favorites stay saved here.")) return;
+  writeSetting(SYNC_TOKEN_KEY, "");
+  writeSetting(SYNC_GIST_KEY, "");
+  updateSyncButton();
+  showSyncMessage("Favorites sync is off on this device.");
+}
+
 // ---------- Start the app ----------
 
 async function start() {
@@ -210,9 +353,31 @@ async function start() {
   updateFavoriteButton(video);
   showFavorites(videos);
   showHistory(videos, today);
+  updateSyncButton();
+
+  // Redraw the favorites list and heart after they change.
+  const refreshFavorites = () => {
+    updateFavoriteButton(video);
+    showFavorites(videos);
+  };
+
+  // If sync is on, fetch the master copy of my favorites from GitHub.
+  let changedHere = false; // set if I tap ♥ before GitHub answers, so that change isn't lost
+  if (syncIsOn()) {
+    showSyncMessage("Syncing favorites…");
+    pullFavorites(videos)
+      .then((fromGitHub) => {
+        if (changedHere) return pushFavorites(); // my newer change here wins
+        saveList(FAVORITES_KEY, fromGitHub);
+        refreshFavorites();
+        showSyncMessage("Favorites sync is on ✓");
+      })
+      .catch((error) => showSyncMessage(error.message));
+  }
 
   // Tapping the heart adds or removes the video from favorites.
   document.getElementById("fav-button").addEventListener("click", () => {
+    changedHere = true;
     let favorites = loadList(FAVORITES_KEY);
     if (favorites.includes(video.id)) {
       favorites = favorites.filter((id) => id !== video.id);
@@ -220,16 +385,24 @@ async function start() {
       favorites.push(video.id);
     }
     saveList(FAVORITES_KEY, favorites);
-    updateFavoriteButton(video);
-    showFavorites(videos);
+    refreshFavorites();
+    pushFavorites();
   });
 
   // Buttons for moving favorites between devices.
   document.getElementById("copy-favorites").addEventListener("click", copyFavorites);
   document.getElementById("paste-favorites").addEventListener("click", () => {
     if (addFavoritesFromCode(videos)) {
-      updateFavoriteButton(video);
-      showFavorites(videos);
+      changedHere = true;
+      refreshFavorites();
+      pushFavorites();
+    }
+  });
+  document.getElementById("sync-favorites").addEventListener("click", async () => {
+    if (syncIsOn()) {
+      turnOffSync();
+    } else if (await turnOnSync(videos)) {
+      refreshFavorites();
     }
   });
 }
