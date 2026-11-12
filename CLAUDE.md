@@ -36,6 +36,7 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - `videos.json` is the hand-picked list. The day number since `START_DATE` (in `app.js`) picks the video, and the list repeats when it runs out. **Always add new videos to the end** so past days don't change.
 - Videos are embeds of public YouTube (or Vimeo) videos. Before adding one, check it allows embedding: `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=VIDEO_ID&format=json` returns 200 if it does, and 401 if embedding is blocked (e.g. DV8 blocks all of theirs). Never guess video IDs.
 - Favorites and history are saved in the browser (`localStorage`), so each device keeps its own copy.
+- To move favorites to another device: "Copy favorites" makes a code like `daily-art:bausch-vollmond,jalet-skid`; "Add favorites from code" on the other device **merges** it in (never removes, ignores unknown IDs).
 - Testing tricks: `?date=YYYY-MM-DD` pretends it's another day; `?video=<id>` shows a specific video.
 - Hosted on GitHub Pages from the root of the `main` branch. Anything pushed to `main` goes live within a minute or two. Keep file paths relative (`style.css`, not `/style.css`), because the site lives under `/daily-art/`.
 
@@ -50,11 +51,19 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - The workflow then opens a pull request; I merge or close it. Nothing is added without my OK.
 - Keys live only in GitHub secrets: `YOUTUBE_API_KEY` and `ANTHROPIC_API_KEY`. Never put them in files.
 - To test the script without real keys, stub `youtube_get` and `anthropic.Anthropic` (don't call the real APIs from a session).
-- Known limit: videos from a closed (rejected) pull request may be proposed again later.
+- **Rejected videos:** `rejected.json` lists YouTube IDs never to propose again. When I close a `new-videos-*` pull request without merging, `.github/workflows/remember-rejected.yml` runs `scripts/remember_rejected.py` and adds that batch's videos to it. `find_videos.py` skips everything in it.
+- When Claude removes videos from a batch by hand, also add them to `rejected.json`.
+
+### Daily reminder
+
+- `.github/workflows/daily-reminder.yml` runs `scripts/notify.py` every morning and sends a phone notification through ntfy (free app) with that day's title. Tapping it opens the live site.
+- 8am US Pacific: GitHub's timer is UTC-only, so it runs at 15:05 and 16:05 UTC and the script only sends during the 8 o'clock hour in `America/Los_Angeles`. A manual "Run workflow" always sends (for testing).
+- The ntfy topic name lives in the GitHub secret `NTFY_TOPIC`, not in the code.
+- `notify.py` reads `START_DATE` from `app.js` and uses the same rule as the page to pick the day's video. Keep them in step.
 
 ### Next steps / open questions
 
-- Maybe later: a daily notification, syncing favorites across devices, remembering rejected videos.
+- Nothing planned right now.
 
 ## How to work with me
 
@@ -94,6 +103,9 @@ Add key decisions here (newest last) so future sessions know what we decided and
 - 2026-11-12: Hosted on GitHub Pages (repo made public; it holds no secrets or personal data). Live at https://pnewts.github.io/daily-art/.
 - 2026-11-12: Automatic search: monthly GitHub Action, ~30 videos, Claude writes the notes, and I approve each batch as a pull request. The script is Python (runs on GitHub only; the web page stays plain HTML/CSS/JS).
 - 2026-11-12: Workflow uses actions/checkout@v7 and actions/setup-python@v7 (Node.js 24 versions) after GitHub warned that Node.js 20 is deprecated.
+- 2026-11-12: Daily reminder at 8am US Pacific via ntfy (no account needed), sent by a GitHub Action.
+- 2026-11-12: Favorites move between devices with a copy/paste code (chosen over automatic sync for simplicity).
+- 2026-11-12: Rejected videos are remembered in `rejected.json`, filled automatically when a batch pull request is closed without merging.
 
 ## Keeping this file updated
 
