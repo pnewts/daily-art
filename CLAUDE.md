@@ -8,6 +8,7 @@ A personal app that shows me **one new video a day of a wildly inspiring piece o
 
 - **Who uses it:** Just me
 - **Platform:** a web page (works on phone and computer)
+- **Live site:** https://pnewts.github.io/daily-art/
 
 ### The kind of art I'm after
 
@@ -36,11 +37,11 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - Videos are embeds of public YouTube (or Vimeo) videos. Before adding one, check it allows embedding: `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=VIDEO_ID&format=json` returns 200 if it does, and 401 if embedding is blocked (e.g. DV8 blocks all of theirs). Never guess video IDs.
 - Favorites and history are saved in the browser (`localStorage`), so each device keeps its own copy.
 - Testing tricks: `?date=YYYY-MM-DD` pretends it's another day; `?video=<id>` shows a specific video.
+- Hosted on GitHub Pages from the root of the `main` branch. Anything pushed to `main` goes live within a minute or two. Keep file paths relative (`style.css`, not `/style.css`), because the site lives under `/daily-art/`.
 
 ### Next steps / open questions
 
 - Automatic search to add new videos (needs a YouTube API key and something that runs on a schedule).
-- Put the page online. GitHub Pages needs a public repo on the free plan; Netlify or Cloudflare Pages work with private repos.
 - Maybe later: a daily notification, syncing favorites across devices.
 
 ## How to work with me
@@ -49,6 +50,7 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - Check with me before big changes, like adding a library, restructuring the project, or deleting files.
 - When I need to run something, give me the exact command and tell me what I should see if it worked.
 - If something goes wrong, tell me plainly what happened and what you suggest next.
+- The repo is public: never commit passwords, API keys or personal info.
 
 ## Core rule: keep it simple
 
@@ -77,6 +79,7 @@ Add key decisions here (newest last) so future sessions know what we decided and
 - 2026-11-12: Videos are a hand-picked list first (30 videos to start); automatic search comes later ("mix of both").
 - 2026-11-12: Each video gets a short note; favorites and history are kept in browser storage.
 - 2026-11-12: Created a cloud environment called "daily-art" that can reach www.youtube.com and vimeo.com, so video links can be checked.
+- 2026-11-12: Hosted on GitHub Pages (repo made public; it holds no secrets or personal data). Live at https://pnewts.github.io/daily-art/.
 
 ## Keeping this file updated
 
