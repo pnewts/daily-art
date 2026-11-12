@@ -36,7 +36,8 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - `videos.json` is the hand-picked list. The day number since `START_DATE` (in `app.js`) picks the video, and the list repeats when it runs out. **Always add new videos to the end** so past days don't change.
 - Videos are embeds of public YouTube (or Vimeo) videos. Before adding one, check it allows embedding: `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=VIDEO_ID&format=json` returns 200 if it does, and 401 if embedding is blocked (e.g. DV8 blocks all of theirs). Never guess video IDs.
 - Favorites and history are saved in the browser (`localStorage`), so each device keeps its own copy.
-- To move favorites to another device: "Copy favorites" makes a code like `daily-art:bausch-vollmond,jalet-skid`; "Add favorites from code" on the other device **merges** it in (never removes, ignores unknown IDs).
+- **Favorites sync (automatic):** "Sync favorites" asks for a GitHub fine-grained token with only *Gists: Read and write*. The app finds (or creates) a **secret Gist** with the file `daily-art-favorites.json`. The Gist is the master copy: on page load its list replaces the local one; every ♥ change is pushed to it. When turning sync on, the Gist's list and the device's list are combined. The token and Gist ID live only in that browser's `localStorage` (`dailyArt.syncToken`, `dailyArt.syncGist`). **Never put a token in the code or repo.** Test with a faked `api.github.com` (Playwright `page.route`), not a real token.
+- Backup way to move favorites: "Copy favorites" makes a code like `daily-art:bausch-vollmond,jalet-skid`; "Add favorites from code" on the other device **merges** it in (never removes, ignores unknown IDs).
 - Testing tricks: `?date=YYYY-MM-DD` pretends it's another day; `?video=<id>` shows a specific video.
 - Hosted on GitHub Pages from the root of the `main` branch. Anything pushed to `main` goes live within a minute or two. Keep file paths relative (`style.css`, not `/style.css`), because the site lives under `/daily-art/`.
 
@@ -106,6 +107,7 @@ Add key decisions here (newest last) so future sessions know what we decided and
 - 2026-11-12: Daily reminder at 8am US Pacific via ntfy (no account needed), sent by a GitHub Action.
 - 2026-11-12: Favorites move between devices with a copy/paste code (chosen over automatic sync for simplicity).
 - 2026-11-12: Rejected videos are remembered in `rejected.json`, filled automatically when a batch pull request is closed without merging.
+- 2026-11-12: Automatic favorites sync through a secret GitHub Gist (no new service or account; one Gist-only token pasted once per device). Copy/paste code kept as a backup.
 
 ## Keeping this file updated
 

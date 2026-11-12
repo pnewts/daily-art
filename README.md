@@ -26,4 +26,6 @@ Every morning at 8am US Pacific, a GitHub Action sends a phone notification with
 
 ## Favorites on several devices
 
-Tap **Copy favorites** on one device, then **Add favorites from code** on the other and paste the code. Favorites are added, never removed.
+**Automatic:** tap **Sync favorites** and paste a GitHub key that can only read and write Gists. Do this once on each device. Your favorites are kept in a secret Gist in your GitHub account and stay the same everywhere.
+
+**By hand:** tap **Copy favorites** on one device, then **Add favorites from code** on the other and paste the code. Favorites are added, never removed.
