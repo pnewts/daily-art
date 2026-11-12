@@ -93,6 +93,7 @@ Add key decisions here (newest last) so future sessions know what we decided and
 - 2026-11-12: Created a cloud environment called "daily-art" that can reach www.youtube.com and vimeo.com, so video links can be checked.
 - 2026-11-12: Hosted on GitHub Pages (repo made public; it holds no secrets or personal data). Live at https://pnewts.github.io/daily-art/.
 - 2026-11-12: Automatic search: monthly GitHub Action, ~30 videos, Claude writes the notes, and I approve each batch as a pull request. The script is Python (runs on GitHub only; the web page stays plain HTML/CSS/JS).
+- 2026-11-12: Workflow uses actions/checkout@v7 and actions/setup-python@v7 (Node.js 24 versions) after GitHub warned that Node.js 20 is deprecated.
 
 ## Keeping this file updated
 
