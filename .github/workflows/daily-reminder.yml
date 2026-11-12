@@ -1,0 +1,31 @@
+# Every morning at 8am Pacific, send a phone notification with today's video.
+# GitHub's timer only uses UTC, and 8am Pacific is 15:00 UTC in summer and 16:00 UTC
+# in winter, so this runs at both times and the script only sends at 8am Pacific.
+# You can also send a test any time: Actions → "Daily reminder" → "Run workflow".
+name: Daily reminder
+
+on:
+  schedule:
+    - cron: "5 15 * * *"
+    - cron: "5 16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the project files
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Send today's notification
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python scripts/notify.py
