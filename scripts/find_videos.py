@@ -150,12 +150,15 @@ ANSWER_SHAPE = {
 }
 
 
-def ask_claude(candidates, examples):
+def ask_claude(candidates, examples, already_have):
     """Ask Claude to choose the best candidates and write a note for each."""
     prompt = f"""{TASTE}
 
 Below are candidate YouTube videos found by an automatic search. Choose up to {HOW_MANY} that best fit
 my taste and would make a great "video of the day". Fewer is fine if the candidates are weak.
+
+I already have the pieces listed under "Pieces I already have". Do not pick another video of any of
+those pieces (a different trailer, excerpt or recording of the same work still counts as the same piece).
 
 Leave out: tutorials, classes, lectures and interviews (unless truly exceptional), reaction videos,
 fan edits, amateur or student work, shaky phone recordings, news reports, compilations, and anything
@@ -173,6 +176,9 @@ For each pick give:
 
 Examples of notes I like:
 {json.dumps(examples, indent=2, ensure_ascii=False)}
+
+Pieces I already have:
+{already_have}
 
 Candidates:
 {json.dumps(candidates, indent=2, ensure_ascii=False)}"""
@@ -264,7 +270,10 @@ def main():
     examples = [{"title": v["title"], "artist": v["artist"], "note": v["note"]}
                 for v in videos if v.get("source") != "auto"][:4]
 
-    entries = make_entries(ask_claude(candidates, examples), candidates)
+    # Every piece already in the list, so Claude doesn't pick another video of the same work.
+    already_have = "\n".join(f"- {v['title']} ({v['artist']})" for v in videos)
+
+    entries = make_entries(ask_claude(candidates, examples, already_have), candidates)
     if not entries:
         print("Claude didn't pick any videos this month.")
         return

@@ -45,7 +45,7 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - It runs `scripts/find_videos.py`, which:
   1. searches YouTube (Data API) for every line in `scripts/search_terms.txt`;
   2. drops known, non-embeddable, very short (<1 min), very long (>3 h) and obscure (<1,000 views) videos;
-  3. asks Claude (`claude-opus-5-5`, via the `anthropic` Python library, pinned in the workflow) to pick up to 30 and write notes;
+  3. asks Claude (`claude-opus-5-5`, via the `anthropic` Python library, pinned in the workflow) to pick up to 30 and write notes. Claude also gets the list of pieces already in `videos.json` and is told not to pick another video of the same piece;
   4. appends them to the end of `videos.json` with `"source": "auto"` and `"id": "yt-<youtubeId>"`.
 - The workflow then opens a pull request; I merge or close it. Nothing is added without my OK.
 - Keys live only in GitHub secrets: `YOUTUBE_API_KEY` and `ANTHROPIC_API_KEY`. Never put them in files.
