@@ -7,7 +7,7 @@ Read this file before starting any task. Keep it up to date.
 A personal app that shows me **one new video a day of a wildly inspiring piece of art**, mostly performance: theatre, dance, clowning, physical theatre and music.
 
 - **Who uses it:** Just me
-- **Platform (web / mobile / desktop):** TBD
+- **Platform:** a web page (works on phone and computer)
 
 ### The kind of art I'm after
 
@@ -27,12 +27,21 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - Each day, show one video I haven't seen before.
 - The same video stays up all day, and a new one appears the next day.
 
-### Open questions (decide together, then move answers to the Decisions log)
+- Each video has a short note about the artist and piece.
+- I can ♥ favorites and look back at past days.
 
-- Where do videos come from? Probably links or embeds of existing public videos (e.g. YouTube or Vimeo) rather than hosting files ourselves.
-- Who picks them? A hand-curated list, automatic search, or a mix?
-- Should each video include a short note about the artist or piece?
-- Extras such as favorites, history, or a daily notification?
+### How it works
+
+- `videos.json` is the hand-picked list. The day number since `START_DATE` (in `app.js`) picks the video, and the list repeats when it runs out. **Always add new videos to the end** so past days don't change.
+- Videos are embeds of public YouTube (or Vimeo) videos. Before adding one, check it allows embedding: `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=VIDEO_ID&format=json` returns 200 if it does, and 401 if embedding is blocked (e.g. DV8 blocks all of theirs). Never guess video IDs.
+- Favorites and history are saved in the browser (`localStorage`), so each device keeps its own copy.
+- Testing tricks: `?date=YYYY-MM-DD` pretends it's another day; `?video=<id>` shows a specific video.
+
+### Next steps / open questions
+
+- Automatic search to add new videos (needs a YouTube API key and something that runs on a schedule).
+- Put the page online. GitHub Pages needs a public repo on the free plan; Netlify or Cloudflare Pages work with private repos.
+- Maybe later: a daily notification, syncing favorites across devices.
 
 ## How to work with me
 
@@ -50,20 +59,24 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 
 ## Tech stack
 
-TBD. Once we choose one, record it here with the reason we picked it.
+Plain HTML, CSS and JavaScript (`index.html`, `style.css`, `app.js`, `videos.json`). No frameworks, no build step, nothing to install. Chosen because it's the simplest thing that works, and easy for a beginner to read.
 
 ## Commands
 
-- **Install:** TBD
-- **Run:** TBD
-- **Test:** TBD
+- **Install:** nothing
+- **Run:** `python3 -m http.server 8000`, then open http://localhost:8000
+- **Test:** open the page with different `?date=` values, check the video changes, ♥ works, and Past days fills in. Check phone width too.
 
 ## Decisions log
 
 Add key decisions here (newest last) so future sessions know what we decided and why.
 
-- 2026-11-12: Created this file. Tech stack is still open.
+- 2026-11-12: Created this file.
 - 2026-11-12: App idea: a daily inspiring performance-art video (see Project overview).
+- 2026-11-12: Web page, built with plain HTML/CSS/JS.
+- 2026-11-12: Videos are a hand-picked list first (30 videos to start); automatic search comes later ("mix of both").
+- 2026-11-12: Each video gets a short note; favorites and history are kept in browser storage.
+- 2026-11-12: Created a cloud environment called "daily-art" that can reach www.youtube.com and vimeo.com, so video links can be checked.
 
 ## Keeping this file updated
 
