@@ -134,3 +134,31 @@ h3 {
 }
 
 .empty { color: var(--muted); font-style: italic; }
+
+/* Copy / paste favorites buttons */
+.sync {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.sync button {
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.sync button:hover { border-color: var(--accent); color: var(--accent); }
+
+.sync-message {
+  min-height: 1.6em;
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}

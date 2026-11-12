@@ -135,6 +135,58 @@ function recordHistory(today, video) {
   }
 }
 
+// ---------- Moving favorites between devices ----------
+
+const CODE_PREFIX = "daily-art:";
+
+function showSyncMessage(text) {
+  document.getElementById("sync-message").textContent = text;
+}
+
+// Copy a short code like "daily-art:bausch-vollmond,jalet-skid" to the clipboard.
+async function copyFavorites() {
+  const favorites = loadList(FAVORITES_KEY);
+  if (favorites.length === 0) {
+    showSyncMessage("You have no favorites to copy yet.");
+    return;
+  }
+  const code = CODE_PREFIX + favorites.join(",");
+  try {
+    await navigator.clipboard.writeText(code);
+    showSyncMessage(`Copied ${favorites.length} favorites. Paste the code into the app on your other device.`);
+  } catch {
+    // Some browsers don't allow copying; show the code so it can be copied by hand.
+    prompt("Copy this code:", code);
+  }
+}
+
+// Ask for a code and add its favorites to the ones already saved (never removes any).
+function addFavoritesFromCode(videos) {
+  const code = (prompt("Paste your favorites code:") || "").trim();
+  if (!code) return false; // cancelled
+
+  if (!code.startsWith(CODE_PREFIX)) {
+    showSyncMessage("That doesn't look like a favorites code. It should start with \"daily-art:\".");
+    return false;
+  }
+
+  const knownIds = new Set(videos.map((v) => v.id));
+  const favorites = loadList(FAVORITES_KEY);
+  let added = 0;
+  for (const id of code.slice(CODE_PREFIX.length).split(",")) {
+    const cleanId = id.trim();
+    if (knownIds.has(cleanId) && !favorites.includes(cleanId)) {
+      favorites.push(cleanId);
+      added++;
+    }
+  }
+  saveList(FAVORITES_KEY, favorites);
+  showSyncMessage(added === 0
+    ? "No new favorites in that code. You already have them all."
+    : `Added ${added} favorite${added === 1 ? "" : "s"}.`);
+  return added > 0;
+}
+
 // ---------- Start the app ----------
 
 async function start() {
@@ -170,6 +222,15 @@ async function start() {
     saveList(FAVORITES_KEY, favorites);
     updateFavoriteButton(video);
     showFavorites(videos);
+  });
+
+  // Buttons for moving favorites between devices.
+  document.getElementById("copy-favorites").addEventListener("click", copyFavorites);
+  document.getElementById("paste-favorites").addEventListener("click", () => {
+    if (addFavoritesFromCode(videos)) {
+      updateFavoriteButton(video);
+      showFavorites(videos);
+    }
   });
 }
 
