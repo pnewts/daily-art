@@ -39,10 +39,22 @@ Aim for work that is bold, surprising, physical and moving, not just technically
 - Testing tricks: `?date=YYYY-MM-DD` pretends it's another day; `?video=<id>` shows a specific video.
 - Hosted on GitHub Pages from the root of the `main` branch. Anything pushed to `main` goes live within a minute or two. Keep file paths relative (`style.css`, not `/style.css`), because the site lives under `/daily-art/`.
 
+### Automatic monthly search
+
+- `.github/workflows/find-videos.yml` runs on GitHub on the 1st of each month (or on demand: Actions → "Find new videos" → "Run workflow").
+- It runs `scripts/find_videos.py`, which:
+  1. searches YouTube (Data API) for every line in `scripts/search_terms.txt`;
+  2. drops known, non-embeddable, very short (<1 min), very long (>3 h) and obscure (<1,000 views) videos;
+  3. asks Claude (`claude-opus-5-5`, via the `anthropic` Python library, pinned in the workflow) to pick up to 30 and write notes;
+  4. appends them to the end of `videos.json` with `"source": "auto"` and `"id": "yt-<youtubeId>"`.
+- The workflow then opens a pull request; I merge or close it. Nothing is added without my OK.
+- Keys live only in GitHub secrets: `YOUTUBE_API_KEY` and `ANTHROPIC_API_KEY`. Never put them in files.
+- To test the script without real keys, stub `youtube_get` and `anthropic.Anthropic` (don't call the real APIs from a session).
+- Known limit: videos from a closed (rejected) pull request may be proposed again later.
+
 ### Next steps / open questions
 
-- Automatic search to add new videos (needs a YouTube API key and something that runs on a schedule).
-- Maybe later: a daily notification, syncing favorites across devices.
+- Maybe later: a daily notification, syncing favorites across devices, remembering rejected videos.
 
 ## How to work with me
 
@@ -80,6 +92,7 @@ Add key decisions here (newest last) so future sessions know what we decided and
 - 2026-11-12: Each video gets a short note; favorites and history are kept in browser storage.
 - 2026-11-12: Created a cloud environment called "daily-art" that can reach www.youtube.com and vimeo.com, so video links can be checked.
 - 2026-11-12: Hosted on GitHub Pages (repo made public; it holds no secrets or personal data). Live at https://pnewts.github.io/daily-art/.
+- 2026-11-12: Automatic search: monthly GitHub Action, ~30 videos, Claude writes the notes, and I approve each batch as a pull request. The script is Python (runs on GitHub only; the web page stays plain HTML/CSS/JS).
 
 ## Keeping this file updated
 

@@ -15,3 +15,7 @@ Then open http://localhost:8000 in your browser. Press `Ctrl+C` in the terminal 
 ## Add a video
 
 Add an entry to the **end** of `videos.json` (adding to the end keeps past days unchanged).
+
+## Automatic monthly search
+
+On the 1st of each month, a GitHub Action searches YouTube (using the terms in `scripts/search_terms.txt`), asks Claude to pick about 30 great videos and write a note for each, and opens a pull request. Merge it to add the videos, or close it to skip them. It needs two repository secrets: `YOUTUBE_API_KEY` and `ANTHROPIC_API_KEY`.
