@@ -58,7 +58,9 @@ def search_ids(term):
         "videoEmbeddable": "true",
         "maxResults": RESULTS_PER_SEARCH,
     })
-    return [item["id"]["videoId"] for item in data.get("items", [])]
+    # Some results can be channels or playlists with no videoId; skip those.
+    ids = [item.get("id", {}).get("videoId") for item in data.get("items", [])]
+    return [video_id for video_id in ids if video_id]
 
 
 def video_details(ids):
