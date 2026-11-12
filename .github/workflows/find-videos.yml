@@ -1,0 +1,51 @@
+# Once a month, search YouTube for new videos and propose them as a pull request.
+# You can also run it any time: GitHub → Actions → "Find new videos" → "Run workflow".
+name: Find new videos
+
+on:
+  schedule:
+    - cron: "17 9 1 * *"   # the 1st of every month at 09:17 UTC
+  workflow_dispatch:         # adds the "Run workflow" button
+
+permissions:
+  contents: write        # to save the new videos on a branch
+  pull-requests: write   # to open the pull request
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the project files
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the Claude library
+        run: pip install "anthropic==2.8.0"
+
+      - name: Search for new videos
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/find_videos.py "$RUNNER_TEMP/pr-body.md"
+
+      - name: Open a pull request with the new videos
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet videos.json; then
+            echo "No new videos this time."
+            exit 0
+          fi
+          branch="new-videos-$(date +%Y-%m-%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "Add new videos found by the monthly search"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "New videos for $(date +'%B %Y')" \
+            --body-file "$RUNNER_TEMP/pr-body.md"

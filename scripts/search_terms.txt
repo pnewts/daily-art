@@ -1,0 +1,44 @@
+# What the monthly search looks for on YouTube, one search per line.
+# Add or remove lines freely. Lines starting with # are ignored.
+
+# The artists that set the tone
+Pina Bausch Tanztheater Wuppertal
+Damien Jalet choreography
+Ecole Philippe Gaulier clown
+Philippe Gaulier bouffon
+Philip Glass opera performance
+Philip Glass live
+SITI Company Anne Bogart
+Spymonkey theatre
+
+# Kindred artists
+Crystal Pite Kidd Pivot
+Hofesh Shechter Company
+Peeping Tom dance theatre
+Complicité Simon McBurney
+Robert Wilson theatre
+Meredith Monk performance
+Akram Khan Company
+Sidi Larbi Cherkaoui Eastman
+Sharon Eyal L-E-V
+Dimitris Papaioannou
+James Thiérrée
+Wim Vandekeybus Ultima Vez
+Ohad Naharin Batsheva
+Bill Irwin clown
+Les Ballets C de la B Alain Platel
+Jérôme Bel
+Anne Teresa De Keersmaeker Rosas
+William Forsythe ballet
+Marina Abramović performance
+Gecko physical theatre
+Frantic Assembly
+Cirque Le Roux
+Compagnie XY acrobatics
+Steve Reich live performance
+
+# Broader styles
+physical theatre performance
+Tanztheater performance
+contemporary dance full performance
+clown theatre performance
