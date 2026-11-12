@@ -22,6 +22,7 @@ import anthropic
 
 ROOT = Path(__file__).resolve().parent.parent
 VIDEOS_FILE = ROOT / "videos.json"
+REJECTED_FILE = ROOT / "rejected.json"  # videos from batches I closed without merging
 TERMS_FILE = Path(__file__).resolve().parent / "search_terms.txt"
 
 HOW_MANY = 30            # how many new videos to propose each month
@@ -258,6 +259,9 @@ def main():
 
     videos = json.loads(VIDEOS_FILE.read_text(encoding="utf-8"))
     known_ids = {v.get("youtubeId") for v in videos}
+    # Never propose a video I've already rejected.
+    if REJECTED_FILE.exists():
+        known_ids |= {r["youtubeId"] for r in json.loads(REJECTED_FILE.read_text(encoding="utf-8"))}
     terms = [line.strip() for line in TERMS_FILE.read_text(encoding="utf-8").splitlines()
              if line.strip() and not line.startswith("#")]
 
